@@ -1,0 +1,231 @@
+---
+// TopBar.astro — Barra utilitaria superior del sistema Ejemplos.mx.
+// ============================================================================
+// Primer eslabón del CHROME STICKY: topbar (top:0) + header (top:--topbar-height)
+// forman un stack pegajoso coherente (ver --stack-height en tokens.css). El menú
+// y el contacto quedan SIEMPRE a la vista; en móvil ya no aparece una píldora
+// suelta: el contacto se reparte en dos acciones de igual peso (llamar · WhatsApp).
+//
+// SSoT: TODO el contenido sale de src/config/site.ts (SITE / CONTACT / WA_MESSAGES).
+// Los enlaces se arman con telUrl() y waUrl() — NUNCA un `tel:` o `wa.me` a mano
+// (regla dura D4). Cambias el dato en site.ts y se actualiza en todo el sitio.
+//
+// MODO GUÍA (prop `guia`): numera cada punto de la barra y añade debajo una
+// leyenda que explica QUÉ va en cada lugar y DE QUÉ DATO sale. En un sitio de
+// cliente se usa <TopBar /> (sin `guia`) y la leyenda desaparece por completo.
+// ============================================================================
+import { SITE, CONTACT } from '@config/site'
+
+interface Props {
+  /** Modo guía: marcadores numerados + leyenda explicativa por punto. Default false (producción). */
+  guia?: boolean
+}
+const { guia = false } = Astro.props
+const schedule = CONTACT.schedule?.display as string | undefined
+
+// Puntos del topbar — fuente única de la leyenda (vive junto al markup que documenta).
+const PUNTOS = [
+  {
+    n: 1,
+    nombre: 'Propuesta principal',
+    que: 'Lo primero que se lee: una frase corta que posiciona la marca. El logotipo NO va aquí — va en el Header, justo debajo.',
+    dato: 'SITE.tagline',
+  },
+  {
+    n: 2,
+    nombre: 'Horario',
+    que: 'Señal de disponibilidad y confianza. Se oculta en móvil para priorizar el teléfono y WhatsApp.',
+    dato: 'CONTACT.schedule.display',
+  },
+  {
+    n: 3,
+    nombre: 'Teléfono',
+    que: 'Contacto directo con clic-para-llamar. El enlace tel: lo construye telUrl(), no se escribe a mano.',
+    dato: 'CONTACT.phone · telUrl()',
+  },
+  {
+    n: 4,
+    nombre: 'WhatsApp',
+    que: 'CTA principal de contacto. El enlace SIEMPRE se arma con waUrl(); el mensaje precargado sale de WA_MESSAGES.',
+    dato: 'waUrl(WA_MESSAGES.cotizar)',
+  },
+]
+---
+
+<aside class:list={['topbar', { 'is-guia': guia }]} aria-label="Información de contacto">
+  <div class="tb-inner">
+    <p class="tb-promo">
+      {guia && <span class="tb-mark" aria-hidden="true">1</span>}
+      <span class="tb-spark" aria-hidden="true"></span>
+      <span class="tb-promo__txt">{SITE.tagline}</span>
+    </p>
+
+    <div class="tb-actions">
+      {schedule && (
+        <span class="tb-item tb-schedule">
+          {guia && <span class="tb-mark" aria-hidden="true">2</span>}
+          <svg class="tb-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+          <span class="tb-item__txt">{schedule}</span>
+        </span>
+      )}
+
+      <a href="/blog" class="tb-item tb-phone" aria-label="Ver todos los artículos">
+        {guia && <span class="tb-mark" aria-hidden="true">3</span>}
+        <svg class="tb-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+        <span class="tb-item__txt">Últimas notas</span>
+      </a>
+
+      {CONTACT.email && (
+        <a href={`mailto:${CONTACT.email}`} class="tb-item tb-wa" aria-label={`Escribir a ${CONTACT.email}`}>
+          {guia && <span class="tb-mark" aria-hidden="true">4</span>}
+          <svg class="tb-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+          <span class="tb-item__txt">Contacto</span>
+        </a>
+      )}
+    </div>
+  </div>
+</aside>
+
+{guia && (
+  <div class="tbg" role="note" aria-label="Guía del topbar">
+    <div class="tbg-inner">
+      <p class="tbg__tag"><span aria-hidden="true">🧭</span> Guía · Topbar</p>
+      <p class="tbg__intro">
+        Barra utilitaria superior (la franja por encima del menú). Cada punto se alimenta de
+        <code>src/config/site.ts</code> (fuente única); no se escribe a mano. Esto es lo que va en cada lugar:
+      </p>
+      <ol class="tbg__list">
+        {PUNTOS.map((p) => (
+          <li class="tbg__pt">
+            <span class="tbg__num">{p.n}</span>
+            <div class="tbg__pt-body">
+              <p class="tbg__nombre">{p.nombre}</p>
+              <p class="tbg__que">{p.que}</p>
+              <p class="tbg__dato"><span>Dato</span> <code>{p.dato}</code></p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p class="tbg__edit">
+        <span>Edita en</span> <code>src/components/TopBar.astro</code> · <code>src/config/site.ts</code>
+      </p>
+    </div>
+  </div>
+)}
+
+<style>
+  /* ── Barra real ─────────────────────────────────────────────────────────────
+     Sticky en top:0. El Header se pega justo debajo (top:--topbar-height) → juntos
+     forman el stack del chrome (--stack-height). Fondo índigo con profundidad y un
+     hairline inferior para separarlo del header sin una línea dura. */
+  .topbar {
+    position: sticky; top: 0; z-index: 501;
+    height: var(--topbar-height);
+    display: flex; align-items: center;
+    color: #fff;
+    font-size: var(--text-sm); font-weight: var(--weight-medium);
+    background: linear-gradient(100deg, var(--c-primary-dark) 0%, var(--c-primary) 60%, var(--c-primary-light) 140%);
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .14);
+  }
+  /* En modo guía la barra no se pega, para que la leyenda quede contigua. */
+  .topbar.is-guia { position: static; }
+
+  .tb-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--sp-4); width: 100%; max-width: var(--container-max);
+    margin-inline: auto; padding-inline: var(--container-px);
+  }
+
+  /* Propuesta de valor + chispa de marca (rombo) antes del texto. */
+  .tb-promo { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; flex: 1; opacity: .96; margin: 0; }
+  .tb-spark {
+    flex-shrink: 0; width: 8px; height: 8px; border-radius: 2px;
+    background: #fff; transform: rotate(45deg);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .18);
+  }
+  .tb-promo__txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .005em; }
+
+  /* Cluster de acciones a la derecha. */
+  .tb-actions { display: flex; align-items: center; gap: var(--sp-2); flex-shrink: 0; }
+  .tb-item {
+    display: inline-flex; align-items: center; gap: .4rem;
+    color: #fff; text-decoration: none; white-space: nowrap;
+    padding: .25rem .5rem; border-radius: var(--radius-sm);
+    transition: background .15s ease, opacity .15s ease;
+  }
+  .tb-ico { flex-shrink: 0; opacity: .9; }
+  .tb-schedule { opacity: .9; cursor: default; }
+  .tb-phone:hover { background: rgba(255, 255, 255, .12); }
+  .tb-item:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: var(--radius-sm); }
+  /* WhatsApp = acción destacada (píldora translúcida). */
+  .tb-wa {
+    background: rgba(255, 255, 255, .16); padding: .25rem .8rem;
+    border-radius: var(--radius-full); font-weight: var(--weight-semibold);
+  }
+  .tb-wa:hover { background: rgba(255, 255, 255, .30); }
+
+  /* ── Marcadores (modo guía) ───────────────────────────────────────────────── */
+  .tb-mark {
+    flex-shrink: 0; display: inline-grid; place-items: center;
+    width: 18px; height: 18px; border-radius: var(--radius-full);
+    background: #fff; color: var(--c-primary);
+    font-family: var(--font-heading); font-weight: var(--weight-bold); font-size: .6875rem;
+  }
+
+  /* ── Leyenda guía ─────────────────────────────────────────────────────────── */
+  .tbg { background: var(--c-surface); border-bottom: 1px solid var(--c-border); }
+  .tbg-inner { max-width: var(--container-max); margin-inline: auto; padding: var(--sp-4) var(--container-px) var(--sp-5); }
+  .tbg__tag {
+    display: inline-flex; align-items: center; gap: var(--sp-1); margin: 0 0 var(--sp-2);
+    font-family: var(--font-heading); font-size: var(--text-xs); font-weight: var(--weight-bold);
+    letter-spacing: .08em; text-transform: uppercase; color: var(--c-primary);
+  }
+  .tbg__intro { margin: 0 0 var(--sp-4); font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--c-ink-2); max-width: 70ch; }
+  .tbg__intro code, .tbg__dato code, .tbg__edit code {
+    font-family: ui-monospace, 'SFMono-Regular', 'Menlo', monospace; font-size: .85em;
+    background: var(--c-white); border: 1px solid var(--c-border); border-radius: var(--radius-sm);
+    padding: .05em .4em; color: var(--c-primary-dark);
+  }
+  .tbg__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); grid-template-columns: 1fr; }
+  .tbg__pt {
+    display: flex; gap: var(--sp-3); align-items: start;
+    background: var(--c-white); border: 1px solid var(--c-border);
+    border-radius: var(--radius-md); padding: var(--sp-3) var(--sp-4);
+  }
+  .tbg__num {
+    flex-shrink: 0; display: inline-grid; place-items: center;
+    width: 24px; height: 24px; border-radius: var(--radius-full);
+    background: var(--c-primary); color: #fff;
+    font-family: var(--font-heading); font-weight: var(--weight-bold); font-size: var(--text-sm);
+  }
+  .tbg__pt-body { display: grid; gap: 2px; min-width: 0; }
+  .tbg__nombre { margin: 0; font-family: var(--font-heading); font-weight: var(--weight-semibold); color: var(--c-ink); font-size: var(--text-base); }
+  .tbg__que { margin: 0; font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--c-ink-2); }
+  .tbg__dato { margin: 4px 0 0; font-size: var(--text-xs); color: var(--c-muted); display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+  .tbg__dato span, .tbg__edit span { text-transform: uppercase; letter-spacing: .06em; font-weight: var(--weight-semibold); color: var(--c-muted); }
+  .tbg__edit { margin: var(--sp-4) 0 0; display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; font-size: var(--text-xs); color: var(--c-muted); }
+
+  /* ── Responsive de la barra ───────────────────────────────────────────────────
+     Tablet: se esconde la propuesta para dar aire al contacto.
+     Móvil (≤640): el contacto se reparte en DOS acciones de igual peso —llamar y
+     WhatsApp— ocupando todo el ancho, con un divisor fino. Adiós a la píldora suelta. */
+  @media (max-width: 900px) {
+    .tb-promo { display: none; }
+    .tb-actions { flex: 1; justify-content: flex-end; }
+  }
+  @media (max-width: 640px) {
+    .tb-schedule { display: none; }
+    .tb-inner { gap: 0; }
+    .tb-actions { width: 100%; gap: 0; }
+    .tb-phone, .tb-wa {
+      flex: 1; justify-content: center; min-height: var(--topbar-height);
+      background: transparent; border-radius: 0; font-weight: var(--weight-semibold);
+    }
+    .tb-phone { box-shadow: inset -1px 0 0 rgba(255, 255, 255, .22); }
+    .tb-wa:hover, .tb-phone:hover { background: rgba(255, 255, 255, .12); }
+  }
+
+  /* Leyenda guía: 1 col (móvil) → 2 col (tablet) → fila de 4 cards (desktop). */
+  @media (min-width: 600px)  { .tbg__list { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1000px) { .tbg__list { grid-template-columns: repeat(4, 1fr); } }
+</style>

@@ -1,0 +1,126 @@
+---
+// ============================================================================
+// /privacidad/ — Aviso de privacidad (página legal).
+// ----------------------------------------------------------------------------
+// Página estática de la serie LEGAL (privacidad · términos · cookies). Extiende
+// PageLayout. El contenido es DEMO/placeholder: estructura y lenguaje listos,
+// pero los datos del responsable (NAP) salen de CONTACT (site.ts, SSoT) y el
+// texto legal debe revisarlo un profesional antes de publicar.
+// ============================================================================
+import PageLayout from '@layouts/PageLayout.astro'
+import Hero from '@components/Hero.astro'
+import SectionHeading from '@components/SectionHeading.astro'
+import SectionMenu from '@components/SectionMenu.astro'
+import { SITE, CONTACT } from '@config/site'
+
+const actualizado = '12 de noviembre de 2025'
+
+const cierreItems = [
+  { label: 'Términos y condiciones', href: '/terminos', sub: 'El acuerdo de uso' },
+  { label: 'Política de cookies', href: '/cookies', sub: 'Qué guardamos y por qué' },
+  { label: 'Contacto', href: '/contacto', sub: 'Ejerce tus derechos ARCO' },
+  { label: 'Inicio', href: '/', sub: 'Volver a la portada' },
+]
+const cierreCta = { label: 'Ir a contacto', href: '/contacto', sub: 'Dudas de privacidad' }
+---
+
+<PageLayout
+  title="Aviso de privacidad"
+  description="Aviso de privacidad de Infórmate.mx: qué datos recabamos, con qué fin, cómo los protegemos y cómo ejercer tus derechos ARCO."
+  pageType="page"
+  breadcrumbs={[{ label: 'Aviso de privacidad' }]}
+  guia={false}
+>
+  <Hero
+    badge="Legal · Privacidad"
+    title="Aviso de"
+    accent="privacidad"
+    subtitle="Cómo tratamos tus datos personales: qué recabamos, para qué, cómo los cuidamos y cómo ejerces tus derechos en todo momento."
+    descRight={[
+      'Este aviso explica, en lenguaje claro, qué información personal pedimos, con qué finalidad la usamos y bajo qué reglas la resguardamos. La transparencia es la base de la confianza con quien nos escribe o se suscribe.',
+      'Si tienes cualquier duda sobre el tratamiento de tus datos o quieres ejercer tus derechos, puedes contactarnos por los medios indicados al final de este documento.',
+    ]}
+  />
+
+  <section class="section">
+    <div class="container">
+      
+
+      <SectionHeading
+        layout="duo"
+        eyebrow="El documento"
+        title="Tu información, tratada con cuidado"
+        desc="Un aviso de privacidad cumple la ley y, sobre todo, le dice a la persona qué pasa con sus datos."
+        body={[
+          'La ley exige informar quién trata los datos, para qué y cómo se protegen. Más allá del requisito, un aviso claro genera confianza: sabes qué información entregas y con qué propósito.',
+          'Las secciones de abajo siguen el esquema de un aviso conforme a la legislación mexicana de protección de datos (LFPDPPP): identidad del responsable, finalidades, datos recabados, derechos ARCO y medios para ejercerlos.',
+        ]}
+      />
+
+      <div class="prose">
+        <p class="legal-meta">Última actualización: <strong>{actualizado}</strong></p>
+
+        <h2>1. Responsable del tratamiento</h2>
+        <p>
+          <strong>{SITE.organization.legalName}</strong> ({SITE.name}), portal de noticias con sede en
+          {CONTACT.city}, {CONTACT.state}, es responsable del tratamiento de tus datos personales. Para
+          cualquier asunto relacionado con este aviso, puedes contactarnos en
+          <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>.
+        </p>
+
+        <h2>2. Datos que recabamos</h2>
+        <p>
+          Recabamos los datos que nos proporcionas de forma directa al escribirnos por correo o al
+          suscribirte a nuestro boletín: nombre, correo electrónico y el contenido de tu mensaje.
+          No solicitamos datos personales sensibles.
+        </p>
+
+        <h2>3. Finalidades</h2>
+        <p>
+          Usamos tus datos para responder tus mensajes y consultas editoriales y, si te suscribes, para
+          enviarte nuestro boletín de noticias. Puedes cancelar la suscripción en cualquier momento sin
+          que afecte la atención a tus mensajes.
+        </p>
+
+        <h2>4. Tus derechos ARCO</h2>
+        <p>
+          Tienes derecho a <strong>Acceder</strong>, <strong>Rectificar</strong> y <strong>Cancelar</strong>
+          tus datos, así como a <strong>Oponerte</strong> a su tratamiento (derechos ARCO). También puedes
+          revocar el consentimiento que nos otorgaste. Para ejercerlos, escríbenos a
+          <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a> indicando tu nombre y la solicitud concreta.
+        </p>
+
+        <h2>5. Cambios a este aviso</h2>
+        <p>
+          Podemos actualizar este aviso para reflejar cambios legales o de nuestra operación. Publicaremos
+          la versión vigente en esta misma página, con su fecha de actualización.
+        </p>
+
+        <p class="legal-note">
+          Este aviso podrá actualizarse conforme cambie la operación del portal o la normativa aplicable.
+          Para cualquier aclaración sobre el tratamiento de tus datos, escríbenos al correo de contacto.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <SectionMenu items={cierreItems} cta={cierreCta} ariaLabel="Más sobre privacidad y uso del sitio" />
+</PageLayout>
+
+<style>
+  .container { max-width: var(--container-max); margin-inline: auto; padding-inline: var(--container-px); }
+  .section { padding: var(--sp-8) 0; }
+  @media (min-width: 768px) { .section { padding: var(--sp-10) 0; } }
+
+  /* Prose legal — lectura cómoda, ancho de medida controlado. */
+  .prose { max-width: 72ch; margin-top: var(--sp-6); }
+  .prose h2 { font-family: var(--font-heading); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--c-ink); margin: var(--sp-6) 0 var(--sp-2); }
+  .prose p { font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--c-ink-2); margin: 0 0 var(--sp-3); }
+  .prose a { color: var(--c-primary); text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover { color: var(--c-primary-dark); }
+  .legal-meta { font-size: var(--text-sm); color: var(--c-muted); }
+  .legal-note {
+    margin-top: var(--sp-5); padding: var(--sp-4); border-radius: var(--radius-md);
+    background: var(--c-surface); border: 1px solid var(--c-border); font-size: var(--text-sm);
+  }
+</style>

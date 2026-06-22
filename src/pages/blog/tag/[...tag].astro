@@ -1,0 +1,97 @@
+---
+// ============================================================================
+// /blog/tag/<tag> — Archivo de etiqueta del blog.
+// ----------------------------------------------------------------------------
+// ArticleLayout enlaza cada tag de un artículo a /blog/tag/<tag>. Esta ruta
+// dinámica genera esos archivos: una página por etiqueta USADA, con sus
+// artículos. El slug es el tag tal cual (coincide con el href del layout).
+// ============================================================================
+import PageLayout from '@layouts/PageLayout.astro'
+import Hero from '@components/Hero.astro'
+import SectionHeading from '@components/SectionHeading.astro'
+import CategoryCard from '@components/CategoryCard.astro'
+import SectionMenu from '@components/SectionMenu.astro'
+import { getCollection } from 'astro:content'
+import { blogImage } from '@lib/blogImages'
+import { CAT_LABEL } from '@lib/blog'
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('articulos', ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  )
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags ?? []))]
+  return tags.map((tag) => ({
+    params: { tag },
+    props: { tag, posts: posts.filter((p) => (p.data.tags ?? []).includes(tag)) },
+  }))
+}
+
+const { tag, posts } = Astro.props
+
+const cierreItems = [
+  { label: 'Todos los artículos', href: '/blog', sub: 'Ver toda la cobertura' },
+  { label: 'Nosotros', href: '/nosotros', sub: 'Qué es Infórmate' },
+  { label: 'Contacto', href: '/contacto', sub: 'Escríbenos' },
+  { label: 'Inicio', href: '/', sub: 'Volver a la portada' },
+]
+const cierreCta = { label: 'Ir a contacto', href: '/contacto', sub: 'Colaboraciones y prensa' }
+---
+
+<PageLayout
+  title={`Tema: ${tag} — blog`}
+  description={`Artículos de Infórmate.mx sobre «${tag}»: notas de actualidad de México relacionadas con este tema.`}
+  pageType="page"
+  breadcrumbs={[{ label: 'Artículos', href: '/blog' }, { label: `#${tag}` }]}
+  guia={false}
+>
+  <Hero
+    badge="Tema"
+    title="Tema:"
+    accent={`#${tag}`}
+    subtitle={`Notas relacionadas con «${tag}». Los temas conectan artículos de distintas secciones que comparten un mismo asunto.`}
+    descRight={[
+      'Los temas son una capa de organización transversal a las secciones: un mismo asunto puede aparecer en Empresas, Tecnología o Economía. Aquí los reunimos todos.',
+      'Usa esta vista para seguir un asunto puntual; para una visión más amplia, vuelve a la sección correspondiente desde el menú.',
+    ]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <SectionHeading
+        layout="duo"
+        eyebrow="Archivo de etiqueta"
+        title={`Artículos con «${tag}»`}
+        desc={`${posts.length} ${posts.length === 1 ? 'artículo' : 'artículos'} con esta etiqueta.`}
+        body={[
+          'Las etiquetas cruzan las categorías: relacionan contenidos por un asunto puntual aunque vivan en secciones distintas. Bien usadas, tejen una red de enlaces internos que ayuda tanto a la persona como al rastreo del buscador.',
+          'La clave es la disciplina: un conjunto corto y estable de etiquetas vale más que decenas de etiquetas únicas. Cada una debe agrupar varios artículos para justificar su página de archivo.',
+        ]}
+      />
+      <div class="grid">
+        {posts.map((a, i) => (
+          <CategoryCard
+            label={a.data.title}
+            href={`/blog/${a.id}`}
+            image={blogImage(a.id, a.data.heroImage)}
+            imageAlt={a.data.title}
+            badge={CAT_LABEL[a.data.category] ?? a.data.category}
+            blurb={a.data.description}
+            ctaLabel="Leer artículo"
+            index={i}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <SectionMenu items={cierreItems} cta={cierreCta} ariaLabel="Sigue explorando el blog" />
+</PageLayout>
+
+<style>
+  .container { max-width: var(--container-max); margin-inline: auto; padding-inline: var(--container-px); }
+  .section { padding: var(--sp-8) 0; }
+  @media (min-width: 768px) { .section { padding: var(--sp-10) 0; } }
+  .grid { display: grid; grid-template-columns: 1fr; gap: var(--sp-5); margin-top: var(--sp-6); }
+  @media (min-width: 640px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+</style>

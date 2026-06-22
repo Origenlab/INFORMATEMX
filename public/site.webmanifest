@@ -1,0 +1,12 @@
+{
+  "name": "Infórmate",
+  "short_name": "Infórmate",
+  "description": "Portal de noticias de México: empresas, emprendimiento, tecnología y economía.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#5b3df5",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

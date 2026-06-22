@@ -1,0 +1,116 @@
+---
+// ============================================================================
+// /terminos/ — Términos y condiciones (página legal).
+// Serie LEGAL (privacidad · términos · cookies). Extiende PageLayout. Texto DEMO:
+// estructura lista; el clausulado debe revisarlo un profesional. NAP desde site.ts.
+// ============================================================================
+import PageLayout from '@layouts/PageLayout.astro'
+import Hero from '@components/Hero.astro'
+import SectionHeading from '@components/SectionHeading.astro'
+import SectionMenu from '@components/SectionMenu.astro'
+import { SITE, CONTACT } from '@config/site'
+
+const actualizado = '12 de noviembre de 2025'
+
+const cierreItems = [
+  { label: 'Aviso de privacidad', href: '/privacidad', sub: 'Cómo tratamos tus datos' },
+  { label: 'Política de cookies', href: '/cookies', sub: 'Qué guardamos y por qué' },
+  { label: 'Contacto', href: '/contacto', sub: '¿Dudas sobre el acuerdo?' },
+  { label: 'Inicio', href: '/', sub: 'Volver a la portada' },
+]
+const cierreCta = { label: 'Ir a contacto', href: '/contacto', sub: 'Atención directa' }
+---
+
+<PageLayout
+  title="Términos y condiciones"
+  description="Términos y condiciones de Infórmate.mx: reglas de uso del portal, propiedad intelectual del contenido, responsabilidades y ley aplicable."
+  pageType="page"
+  breadcrumbs={[{ label: 'Términos y condiciones' }]}
+  guia={false}
+>
+  <Hero
+    badge="Legal · Términos"
+    title="Términos y"
+    accent="condiciones"
+    subtitle="Las reglas claras del uso del sitio y de la relación entre tú y nosotros: qué puedes esperar y qué esperamos a cambio."
+    descRight={[
+      'Unos términos bien escritos ordenan la relación entre el portal y quien lo visita: definen cómo se usa el contenido, quién responde por qué y a qué ley se sujeta cualquier diferencia. Reglas claras desde el inicio evitan malentendidos.',
+      'Las secciones de abajo cubren lo esencial del uso de un medio digital: objeto, propiedad intelectual del contenido editorial, conducta del usuario, responsabilidad y ley aplicable.',
+    ]}
+  />
+
+  <section class="section">
+    <div class="container">
+      
+
+      <SectionHeading
+        layout="duo"
+        eyebrow="El acuerdo"
+        title="Reglas claras, relación sana"
+        desc="Al usar el sitio aceptas estos términos. Por eso conviene que sean breves, legibles y justos."
+        body={[
+          'Estos términos rigen el acceso y uso del sitio: navegar, leer el contenido, enviar un formulario o solicitar una cotización. Usar el sitio implica aceptarlos, así que su valor está en ser comprensibles, no en acumular cláusulas que nadie lee.',
+          'Las secciones cubren lo estándar: objeto, propiedad intelectual del contenido, conducta esperada del usuario, límite de responsabilidad y la legislación que aplica. Sustituye cada bloque por las condiciones reales de tu servicio.',
+        ]}
+      />
+
+      <div class="prose">
+        <p class="legal-meta">Última actualización: <strong>{actualizado}</strong></p>
+
+        <h2>1. Objeto y aceptación</h2>
+        <p>
+          Estos términos regulan el uso del sitio de <strong>{SITE.name}</strong>. Al acceder y utilizar
+          el sitio, declaras haber leído y aceptado estas condiciones. Si no estás de acuerdo, te pedimos
+          no utilizarlo.
+        </p>
+
+        <h2>2. Uso del sitio</h2>
+        <p>
+          Te comprometes a usar el sitio conforme a la ley y a la buena fe, sin realizar actividades que
+          puedan dañarlo, sobrecargarlo o impedir su normal funcionamiento. La información publicada tiene
+          fines informativos y puede actualizarse o corregirse sin previo aviso.
+        </p>
+
+        <h2>3. Propiedad intelectual</h2>
+        <p>
+          Los textos, imágenes, marcas y demás elementos del sitio son propiedad de {SITE.name} o de sus
+          titulares y están protegidos por la legislación aplicable. No se permite su reproducción o uso
+          sin autorización previa por escrito.
+        </p>
+
+        <h2>4. Responsabilidad</h2>
+        <p>
+          Procuramos que la información sea correcta y esté actualizada, pero no garantizamos la ausencia
+          de errores ni la disponibilidad ininterrumpida del sitio. En la medida que permita la ley, no
+          asumimos responsabilidad por daños derivados del uso o la imposibilidad de uso del sitio.
+        </p>
+
+        <h2>5. Ley aplicable</h2>
+        <p>
+          Estos términos se rigen por la legislación mexicana. Para cualquier controversia, las partes se
+          someten a los tribunales competentes de {CONTACT.city}, salvo que la ley disponga otra cosa.
+        </p>
+
+        <p class="legal-note">
+          Estos términos podrán actualizarse conforme evolucione el portal o la normativa aplicable. La
+          versión vigente será siempre la publicada en esta página.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <SectionMenu items={cierreItems} cta={cierreCta} ariaLabel="Más sobre el uso del sitio" />
+</PageLayout>
+
+<style>
+  .container { max-width: var(--container-max); margin-inline: auto; padding-inline: var(--container-px); }
+  .section { padding: var(--sp-8) 0; }
+  @media (min-width: 768px) { .section { padding: var(--sp-10) 0; } }
+  .prose { max-width: 72ch; margin-top: var(--sp-6); }
+  .prose h2 { font-family: var(--font-heading); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--c-ink); margin: var(--sp-6) 0 var(--sp-2); }
+  .prose p { font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--c-ink-2); margin: 0 0 var(--sp-3); }
+  .prose a { color: var(--c-primary); text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover { color: var(--c-primary-dark); }
+  .legal-meta { font-size: var(--text-sm); color: var(--c-muted); }
+  .legal-note { margin-top: var(--sp-5); padding: var(--sp-4); border-radius: var(--radius-md); background: var(--c-surface); border: 1px solid var(--c-border); font-size: var(--text-sm); }
+</style>

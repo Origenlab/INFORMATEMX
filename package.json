@@ -1,0 +1,26 @@
+{
+  "_comment": "package.json — deps canónicas Astro 6 SSG. Origen: PROYECTORED/package.json (deps mínimas y limpias) + @astrojs/mdx ^6 para el blog. El blog vive en colección .mdx (D3): @astrojs/mdx es OBLIGATORIO y debe ser ^6 (peer astro@^6.4); @astrojs/mdx@^4 exige astro@^5 y ROMPE con astro@^6. Regístralo en astro.config.mjs. NO incluir @tailwindcss/typography ni plugins rotos (anti-patrón FIREFIGHTERMX). CSS canónico = vanilla + tokens :root (C1).",
+  "name": "informate-mx",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/check-demo.mjs && astro check && astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "audit:meta": "node scripts/audit-meta.mjs",
+    "astro": "astro",
+    "check:demo": "node scripts/check-demo.mjs",
+    "new-site": "node scripts/new-site.mjs"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@astrojs/mdx": "^6.0.0",
+    "@astrojs/sitemap": "^3.7.2",
+    "astro": "^6.1.1",
+    "typescript": "^5.9.3"
+  }
+}

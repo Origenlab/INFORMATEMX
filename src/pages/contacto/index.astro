@@ -1,0 +1,133 @@
+---
+// ============================================================================
+// /contacto/ — Página de contacto (medio editorial Infórmate.mx).
+// Reúne los canales reales del portal (correo + X). Sin teléfono/WhatsApp/NAP
+// (un medio digital sin sede pública). TODO desde CONTACT/SITE/SOCIAL (SSoT).
+// ============================================================================
+import PageLayout from '@layouts/PageLayout.astro'
+import Hero from '@components/Hero.astro'
+import SectionHeading from '@components/SectionHeading.astro'
+import SectionMenu from '@components/SectionMenu.astro'
+import { SITE, CONTACT, SOCIAL } from '@config/site'
+
+// Canales de contacto reales del medio — data-driven.
+const canales = [
+  ...(CONTACT.email
+    ? [{
+        k: 'mail', titulo: 'Correo', dato: CONTACT.email, sub: 'Para colaboraciones, dudas y prensa',
+        href: `mailto:${CONTACT.email}`, external: false, cta: 'Enviar correo',
+      }]
+    : []),
+  ...SOCIAL.map((s) => ({
+    k: 'x', titulo: s.label, dato: s.url.replace(/^https?:\/\//, ''), sub: 'Síguenos para las últimas notas',
+    href: s.url, external: true, cta: 'Abrir perfil',
+  })),
+]
+
+const cierreItems = [
+  { label: 'Empresas', href: '/blog/categoria/empresas', sub: 'Negocios de México' },
+  { label: 'Emprendimiento', href: '/blog/categoria/emprendimiento', sub: 'Ecosistema startup' },
+  { label: 'Artículos', href: '/blog', sub: 'Todas las notas' },
+  { label: 'Inicio', href: '/', sub: 'Volver a la portada' },
+]
+const cierreCta = { label: 'Ver últimas noticias', href: '/blog', sub: 'Lo más reciente' }
+
+const ICON = {
+  mail: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>',
+  x: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.6l5.24 6.93 6.06-6.93Zm-1.29 19.5h2.04L6.48 3.24H4.3L17.61 20.65Z"/></svg>',
+}
+---
+
+<PageLayout
+  title="Contacto"
+  description="Contacta a Infórmate.mx: escríbenos por correo para colaboraciones, dudas o prensa, o síguenos en redes para las últimas noticias de México."
+  pageType="page"
+  breadcrumbs={[{ label: 'Contacto' }]}
+  guia={false}
+>
+  <Hero
+    badge="Hablemos"
+    title="Ponte en"
+    accent="contacto"
+    subtitle="¿Tienes un dato, una colaboración o una consulta de prensa? Escríbenos por correo o síguenos en redes para no perderte nada."
+    descRight={[
+      'Somos un medio digital: la forma más directa de contactarnos es por correo. Lee con atención el tema de tu mensaje y te respondemos lo antes posible.',
+      'Para enterarte de las últimas notas en tiempo real, síguenos en nuestras redes.',
+    ]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <SectionHeading
+        layout="duo"
+        eyebrow="Canales"
+        title="Cómo contactarnos"
+        desc="Correo para mensajes y redes para seguir la cobertura al día."
+        body={[
+          'Usa el correo para colaboraciones editoriales, aclaraciones sobre una nota o solicitudes de prensa. Es el canal con seguimiento.',
+          'En redes publicamos lo más reciente: síguenos para recibir las notas en cuanto salen.',
+        ]}
+      />
+
+      <div class="canales">
+        {canales.map((c) => (
+          <a class="canal" href={c.href} target={c.external ? '_blank' : undefined} rel={c.external ? 'noopener noreferrer' : undefined}>
+            <span class="canal__icon" set:html={ICON[c.k as keyof typeof ICON]} />
+            <span class="canal__body">
+              <span class="canal__titulo">{c.titulo}</span>
+              <span class="canal__dato">{c.dato}</span>
+              <span class="canal__sub">{c.sub}</span>
+            </span>
+            <span class="canal__cta">{c.cta} →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--surface">
+    <div class="container">
+      <SectionHeading
+        layout="duo"
+        eyebrow="Quiénes somos"
+        title="Un portal de noticias de México"
+        desc="Cobertura de actualidad económica, empresas y emprendimiento."
+        body={[
+          `${SITE.name} es un portal independiente enfocado en la actualidad de México: empresas, emprendimiento, tecnología y economía, con información clara y verificable.`,
+          'Conoce más sobre el proyecto en la página Nosotros, o empieza a leer las últimas notas.',
+        ]}
+      />
+      <p class="nota-edit">
+        <a class="nota-edit__link" href="/nosotros">Más sobre Infórmate.mx →</a>
+      </p>
+    </div>
+  </section>
+
+  <SectionMenu items={cierreItems} cta={cierreCta} ariaLabel="Sigue explorando el sitio" />
+</PageLayout>
+
+<style>
+  .container { max-width: var(--container-max); margin-inline: auto; padding-inline: var(--container-px); }
+  .section { padding: var(--sp-8) 0; }
+  .section--surface { background: var(--c-surface); }
+  @media (min-width: 768px) { .section { padding: var(--sp-10) 0; } }
+
+  .canales { display: grid; grid-template-columns: 1fr; gap: var(--sp-4); margin-top: var(--sp-6); }
+  @media (min-width: 768px) { .canales { grid-template-columns: repeat(2, 1fr); } }
+  .canal {
+    display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-5);
+    background: var(--c-white); border: 1px solid var(--c-border); border-radius: var(--radius-lg);
+    text-decoration: none; transition: border-color .15s, transform .15s, box-shadow .15s;
+  }
+  .canal:hover { border-color: var(--c-primary); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+  .canal__icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: var(--radius-md); background: var(--c-primary-light); color: var(--c-primary); }
+  .canal__body { display: grid; gap: 2px; }
+  .canal__titulo { font-family: var(--font-heading); font-weight: var(--weight-bold); color: var(--c-ink); font-size: var(--text-base); }
+  .canal__dato { font-weight: var(--weight-semibold); color: var(--c-ink-2); word-break: break-word; }
+  .canal__sub { font-size: var(--text-sm); color: var(--c-muted); }
+  .canal__cta { margin-top: auto; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--c-primary); }
+
+  .nota-edit { margin-top: var(--sp-6); }
+  .nota-edit__link { font-weight: var(--weight-semibold); color: var(--c-primary); text-decoration: none; }
+  .nota-edit__link:hover { text-decoration: underline; }
+</style>

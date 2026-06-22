@@ -1,0 +1,214 @@
+---
+// ============================================================================
+// index.astro — HOME del portal editorial Infórmate.mx.
+// ----------------------------------------------------------------------------
+// Adaptada del esqueleto canónico a un MEDIO editorial: presenta el portal y
+// reparte el tráfico hacia las SECCIONES (Empresas · Emprendimiento · Tecnología
+// · Economía) y hacia el listado de artículos. 100% data-driven desde site.ts.
+//
+// REGLA DURA: contenido HONESTO. Sin reseñas, clientes, cifras ni afirmaciones
+// fabricadas. Sin links a competencia. El catálogo/WhatsApp del template de
+// negocio se sustituyó por la vitrina de secciones + CTA a "Últimas noticias".
+// ============================================================================
+import PageLayout from "@layouts/PageLayout.astro";
+import Hero from "@components/Hero.astro";
+import SectionMenu from "@components/SectionMenu.astro";
+import SectionHeading from "@components/SectionHeading.astro";
+import CategoryCard from "@components/CategoryCard.astro";
+import TrustBar from "@components/TrustBar.astro";
+import ProcessSteps from "@components/ProcessSteps.astro";
+import CompanyAbout from "@components/CompanyAbout.astro";
+import FAQAccordion from "@components/FAQAccordion.astro";
+import CTABanner from "@components/CTABanner.astro";
+import { SITE, KEYWORDS, SHOWCASE } from "@config/site";
+
+// ── Menú de secciones bajo el hero (data-driven desde NAV; excluye enlaces sueltos) ──
+const menuSecciones = SHOWCASE.map((s) => ({
+  label: s.label,
+  href: s.href,
+  sub: "Ver sección",
+}));
+const menuCta = {
+  label: "Ver todos los artículos",
+  href: "/blog",
+  sub: "Lo más reciente",
+};
+
+// ── Barra de confianza (pilares editoriales HONESTOS) ──
+const pillars = [
+  { icon: "shield", title: "Información verificable", desc: "Publicamos con base en fuentes y datos comprobables, no en rumores." },
+  { icon: "doc", title: "Lenguaje claro", desc: "Explicamos economía y negocios sin tecnicismos innecesarios ni relleno." },
+  { icon: "pin", title: "Enfoque en México", desc: "Seguimos la actualidad del país: empresas, emprendimiento, tecnología y economía." },
+  { icon: "chat", title: "Criterio propio", desc: "Mantenemos independencia y separamos la información de la opinión." },
+];
+
+// ── Cómo trabajamos (proceso editorial) ──
+const steps = [
+  { num: "01", title: "Seguimos la actualidad", desc: "Monitoreamos lo que pasa en empresas, emprendimiento, tecnología y economía en México." },
+  { num: "02", title: "Verificamos", desc: "Contrastamos con fuentes y datos antes de publicar; si no se sustenta, no se afirma." },
+  { num: "03", title: "Explicamos con claridad", desc: "Damos contexto: qué pasó, a quién afecta y por qué importa, en lenguaje sencillo." },
+  { num: "04", title: "Publicamos y actualizamos", desc: "Sacamos la nota y la mantenemos al día si la historia evoluciona." },
+];
+
+// ── Sobre el medio (qué / cómo) — sin cifras inventadas ──
+const empresa = {
+  que: {
+    title: "Qué hacemos",
+    body: [
+      "Cubrimos la actualidad de México con foco en empresas, emprendimiento, tecnología y economía, reunida en un solo lugar fácil de leer.",
+      "Buscamos aportar contexto, no solo el dato suelto: para qué importa y a quién afecta.",
+    ],
+  },
+  como: {
+    title: "Cómo trabajamos",
+    pillars: [
+      { title: "Fuentes", desc: "Nos apoyamos en información comprobable; lo que no se sustenta, no se publica." },
+      { title: "Claridad", desc: "Escribimos para que cualquiera entienda, sin jerga ni relleno." },
+      { title: "Independencia", desc: "Mantenemos criterio propio y distinguimos la información de la opinión." },
+    ],
+  },
+};
+
+// ── FAQ del medio ──
+const faqs = [
+  { question: "¿Qué temas cubre Infórmate.mx?", answer: "Actualidad de México en cuatro secciones: empresas, emprendimiento, tecnología y economía." },
+  { question: "¿Cómo me mantengo al día?", answer: "Visita la sección de artículos para ver lo más reciente, o síguenos en redes desde la página de contacto." },
+  { question: "¿Puedo enviar una colaboración o un dato?", answer: "Sí. Escríbenos por correo desde la página de contacto; revisamos cada propuesta editorial." },
+];
+---
+
+<PageLayout
+  keywords={KEYWORDS}
+  pageType="home"
+  guia={false}
+  schemaData={{ faqs }}
+>
+  <Hero
+    badge={SITE.tagline}
+    title="Noticias de"
+    accent="México"
+    subtitle="Actualidad económica, empresas y emprendimiento, con información clara y verificable para mantenerte al día del país."
+    descRight={[
+      "Reunimos en un solo lugar lo que mueve a México: empresas, emprendimiento, tecnología y economía, explicado sin ruido.",
+      "Lee las últimas notas o entra directo a la sección que te interesa.",
+    ]}
+    ctas={[
+      { text: "Ver últimas noticias", href: "/blog", variant: "primary" },
+      { text: "Conócenos", href: "/nosotros", variant: "outline" },
+    ]}
+  />
+
+  <SectionMenu items={menuSecciones} cta={menuCta} />
+
+  {/* ─── Barra de confianza (pilares editoriales) ─── */}
+  <TrustBar items={pillars} />
+
+  {/* ─── Vitrina de SECCIONES (SHOWCASE) ─── */}
+  <section class="section section--surface">
+    <div class="container">
+      <SectionHeading
+        layout="duo"
+        eyebrow="Secciones"
+        title="Lo que"
+        titleAccent="cubrimos"
+        desc="Cuatro secciones para seguir la actualidad de México."
+        body={[
+          "Organizamos la cobertura por tema para que llegues rápido a lo que te interesa: empresas, emprendimiento, tecnología y economía.",
+          "Entra a cualquier sección para ver sus notas más recientes.",
+        ]}
+      />
+      <div class="showcase">
+        {SHOWCASE.map((c, i) => (
+          <CategoryCard
+            label={c.label}
+            href={c.href}
+            image={c.image}
+            imageAlt={c.imageAlt}
+            badge={c.badge}
+            blurb={c.blurb}
+            subcategories={c.subcategories}
+            ctaLabel={c.ctaLabel}
+            index={i}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ─── Cómo trabajamos (proceso editorial, fondo oscuro) ─── */}
+  <ProcessSteps
+    eyebrow="Cómo trabajamos"
+    title="Del hecho a"
+    titleAccent="la nota"
+    desc="Un proceso simple: seguir, verificar, explicar y publicar."
+    steps={steps}
+  />
+
+  {/* ─── Sobre el medio (qué / cómo) ─── */}
+  <section class="section section--surface">
+    <div class="container">
+      <SectionHeading
+        layout="duo"
+        eyebrow="Quiénes somos"
+        title="Información clara,"
+        titleAccent="verificable y útil"
+        desc="Un portal independiente enfocado en la actualidad de México."
+        body={[
+          "Trabajamos para que entiendas lo que pasa en el país sin tener que leer veinte fuentes: lo esencial, con contexto y en lenguaje claro.",
+          "Conoce más sobre el proyecto o empieza a leer las últimas notas.",
+        ]}
+      />
+      <CompanyAbout
+        que={empresa.que}
+        como={empresa.como}
+        cta={{ label: "Conócenos", href: "/nosotros" }}
+      />
+    </div>
+  </section>
+
+  {/* ─── FAQ ─── */}
+  <section class="section">
+    <div class="container">
+      <SectionHeading
+        layout="duo"
+        eyebrow="Preguntas frecuentes"
+        title="Dudas"
+        titleAccent="comunes"
+        desc="Lo que más nos preguntan sobre el portal."
+        body={[
+          "Reunimos las preguntas más frecuentes de nuestros lectores.",
+          "¿Tu duda no está aquí? Escríbenos desde la página de contacto.",
+        ]}
+      />
+      <FAQAccordion items={faqs} />
+    </div>
+  </section>
+
+  {/* ─── Cierre / CTA ─── */}
+  <CTABanner
+    heading="No te pierdas nada"
+    desc="Lee las últimas noticias de empresas, emprendimiento, tecnología y economía de México."
+    btns={[
+      { label: "Ver últimas noticias", href: "/blog", icon: "arrow", primary: true },
+      { label: "Contacto", href: "/contacto", icon: "arrow" },
+    ]}
+    badge="Actualidad de México"
+    variant="dark"
+  />
+</PageLayout>
+
+<style>
+  .container {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--container-px);
+  }
+  .section { padding: var(--sp-8) 0; }
+  .section--surface { background: var(--c-surface); }
+  .showcase { display: grid; grid-template-columns: 1fr; gap: var(--sp-5); }
+  @media (min-width: 640px) { .showcase { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) {
+    .section { padding: var(--sp-10) 0; }
+    .showcase { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>

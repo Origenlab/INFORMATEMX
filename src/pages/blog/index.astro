@@ -1,0 +1,82 @@
+---
+// ============================================================================
+// /blog/ — Landing del Blog (PÁGINA 1 del listado + sidebar de interlinking).
+// ----------------------------------------------------------------------------
+// Página 1 del listado paginado. Muestra los primeros PAGE_SIZE artículos de la
+// colección `articulos` (.mdx, ordenada por fecha) y enlaza a /blog/pagina/<n>
+// para el resto (ver src/pages/blog/pagina/[page].astro). El cuerpo (rejilla +
+// sidebar + paginación) lo pinta BlogListing, COMPARTIDO con las demás páginas,
+// alimentado por blogSidebarData() (lib/blog.ts). Imágenes ilustrativas (pool).
+// ============================================================================
+import PageLayout from '@layouts/PageLayout.astro'
+import Hero from '@components/Hero.astro'
+import SectionHeading from '@components/SectionHeading.astro'
+import SectionMenu from '@components/SectionMenu.astro'
+import BlogListing from '@components/BlogListing.astro'
+import { getCollection } from 'astro:content'
+import { PAGE_SIZE, blogSidebarData } from '@lib/blog'
+
+const articulos = (await getCollection('articulos', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+)
+
+const sidebar = blogSidebarData(articulos)
+const total = Math.max(1, Math.ceil(articulos.length / PAGE_SIZE))
+const pageItems = articulos.slice(0, PAGE_SIZE)
+
+const cierreItems = [
+  { label: 'Empresas', href: '/blog/categoria/empresas', sub: 'Negocios de México' },
+  { label: 'Emprendimiento', href: '/blog/categoria/emprendimiento', sub: 'Ecosistema startup' },
+  { label: 'Nosotros', href: '/nosotros', sub: 'Qué es Infórmate' },
+  { label: 'Contacto', href: '/contacto', sub: 'Escríbenos' },
+]
+const cierreCta = { label: 'Ir a contacto', href: '/contacto', sub: 'Colaboraciones y prensa' }
+---
+
+<PageLayout
+  title="Artículos — noticias de México"
+  description="Todos los artículos de Infórmate.mx: empresas, emprendimiento, tecnología y economía de México, ordenados por fecha. Información clara y verificable."
+  pageType="page"
+  breadcrumbs={[{ label: 'Artículos' }]}
+  guia={false}
+>
+  <Hero
+    badge="Actualidad de México"
+    title="Todos los"
+    accent="artículos"
+    subtitle="Noticias y análisis de empresas, emprendimiento, tecnología y economía: lo que pasa en el país, explicado con claridad."
+    descRight={[
+      'Aquí reunimos toda nuestra cobertura, ordenada por fecha. Usa las secciones del menú lateral para enfocarte en el tema que te interesa.',
+      'Trabajamos con información verificable y lenguaje claro, sin relleno: lo esencial para entender lo que ocurre en México.',
+    ]}
+  />
+
+  <section class="section">
+    <div class="container">
+      
+
+      <SectionHeading
+        layout="duo"
+        eyebrow="Últimas notas"
+        title="Lo más reciente"
+        desc="Las publicaciones más nuevas, ordenadas por fecha."
+        body={[
+          'Cada nota cubre un tema concreto de la actualidad de México: una empresa, un movimiento del ecosistema emprendedor, una novedad tecnológica o un dato económico relevante.',
+          'Si buscas algo específico, filtra por sección desde la columna lateral; ahí también encontrarás los temas y las lecturas más recientes.',
+        ]}
+      />
+
+      <BlogListing articulos={pageItems} current={1} total={total} sidebar={sidebar}>
+        
+      </BlogListing>
+    </div>
+  </section>
+
+  <SectionMenu items={cierreItems} cta={cierreCta} ariaLabel="Sigue explorando el sitio" />
+</PageLayout>
+
+<style>
+  .container { max-width: var(--container-max); margin-inline: auto; padding-inline: var(--container-px); }
+  .section { padding: var(--sp-8) 0; }
+  @media (min-width: 768px) { .section { padding: var(--sp-10) 0; } }
+</style>

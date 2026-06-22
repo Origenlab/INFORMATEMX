@@ -1,0 +1,98 @@
+---
+// ============================================================================
+// /blog/categoria/<categoria> — Archivo de categoría del blog.
+// ----------------------------------------------------------------------------
+// ArticleLayout enlaza la categoría de cada artículo a /blog/categoria/<cat>.
+// Esta ruta dinámica genera esos archivos: una página por categoría USADA por
+// los artículos (no por todo el enum), listando sus entradas. Data-driven.
+// ============================================================================
+import PageLayout from '@layouts/PageLayout.astro'
+import Hero from '@components/Hero.astro'
+import SectionHeading from '@components/SectionHeading.astro'
+import CategoryCard from '@components/CategoryCard.astro'
+import SectionMenu from '@components/SectionMenu.astro'
+import { getCollection } from 'astro:content'
+import { blogImage } from '@lib/blogImages'
+import { CAT_LABEL } from '@lib/blog'
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('articulos', ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  )
+  const cats = [...new Set(posts.map((p) => p.data.category))]
+  return cats.map((categoria) => ({
+    params: { categoria },
+    props: { categoria, posts: posts.filter((p) => p.data.category === categoria) },
+  }))
+}
+
+const { categoria, posts } = Astro.props
+const catLabel = CAT_LABEL[categoria] ?? categoria
+
+const cierreItems = [
+  { label: 'Todos los artículos', href: '/blog', sub: 'Ver toda la cobertura' },
+  { label: 'Nosotros', href: '/nosotros', sub: 'Qué es Infórmate' },
+  { label: 'Contacto', href: '/contacto', sub: 'Escríbenos' },
+  { label: 'Inicio', href: '/', sub: 'Volver a la portada' },
+]
+const cierreCta = { label: 'Ir a contacto', href: '/contacto', sub: 'Colaboraciones y prensa' }
+---
+
+<PageLayout
+  title={`Categoría: ${catLabel} — blog`}
+  description={`Artículos de Infórmate.mx en la sección ${catLabel}: noticias y análisis de México sobre ${catLabel.toLowerCase()}.`}
+  pageType="page"
+  breadcrumbs={[{ label: 'Artículos', href: '/blog' }, { label: catLabel }]}
+  guia={false}
+>
+  <Hero
+    badge="Sección"
+    title="Sección:"
+    accent={catLabel}
+    subtitle={`Toda nuestra cobertura de «${catLabel}»: noticias, perfiles y análisis de México sobre este tema.`}
+    descRight={[
+      `Aquí reunimos las notas de la sección ${catLabel}. Es el punto de partida para seguir un tema a fondo, de lo más reciente a lo anterior.`,
+      'Cada nota trabaja con información clara y verificable; usa el menú para saltar a otras secciones del portal.',
+    ]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <SectionHeading
+        layout="duo"
+        eyebrow="Archivo de categoría"
+        title={`Artículos en «${catLabel}»`}
+        desc={`${posts.length} ${posts.length === 1 ? 'artículo' : 'artículos'} en esta categoría.`}
+        body={[
+          'Agrupar por categoría no es solo orden: es estructura que el buscador entiende. Cada archivo de categoría refuerza el tema del sitio y reparte autoridad entre los artículos relacionados mediante enlaces internos.',
+          'Por eso conviene tener pocas categorías bien definidas en lugar de muchas dispersas. Cada una debe responder a un interés real de tu audiencia y acumular suficiente contenido para tener sentido como archivo.',
+        ]}
+      />
+      <div class="grid">
+        {posts.map((a, i) => (
+          <CategoryCard
+            label={a.data.title}
+            href={`/blog/${a.id}`}
+            image={blogImage(a.id, a.data.heroImage)}
+            imageAlt={a.data.title}
+            badge={CAT_LABEL[a.data.category] ?? a.data.category}
+            blurb={a.data.description}
+            ctaLabel="Leer artículo"
+            index={i}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <SectionMenu items={cierreItems} cta={cierreCta} ariaLabel="Sigue explorando el blog" />
+</PageLayout>
+
+<style>
+  .container { max-width: var(--container-max); margin-inline: auto; padding-inline: var(--container-px); }
+  .section { padding: var(--sp-8) 0; }
+  @media (min-width: 768px) { .section { padding: var(--sp-10) 0; } }
+  .grid { display: grid; grid-template-columns: 1fr; gap: var(--sp-5); margin-top: var(--sp-6); }
+  @media (min-width: 640px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+</style>

@@ -1,0 +1,117 @@
+---
+{/* PageLayout — chrome estándar: Header + Breadcrumbs + <slot/> + Footer + WhatsAppFloat. Extiende BaseLayout | Origen: BOMBERO (Base→Page limpio) */}
+
+// ============================================================================
+// PageLayout.astro — CHROME ESTÁNDAR del sitio.
+//
+// Extiende BaseLayout y añade el "marco" que comparten casi todas las páginas:
+// Header, Breadcrumbs (opcional), <main>, Footer y el botón flotante de
+// WhatsApp. Las páginas de tipo (ProductLayout, ServiceLayout, ArticleLayout,
+// directorio) extienden ESTE layout, no BaseLayout directamente.
+//
+// Componentes: se referencian con el alias @components/* (los crea el agente de
+// componentes; aquí solo se invocan por nombre). Mapea @components en tsconfig.json:
+//   "paths": { "@components/*": ["src/components/*"] }
+//
+// CONTRATO: mismas props que BaseLayout + `breadcrumbs?`.
+//   breadcrumbs = [{ label, href? }]. El componente Breadcrumbs los pinta y el
+//   JSON-LD BreadcrumbList lo emite buildSchema UNA sola vez (B3) — NO lo emite
+//   el componente Breadcrumbs, para evitar el doble BreadcrumbList (anti-patrón
+//   confirmado en BOMBERO y RENTADEILUMINACION).
+// ============================================================================
+
+import BaseLayout from "./BaseLayout.astro";
+import TopBar from "@components/TopBar.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+import Breadcrumbs from "@components/Breadcrumbs.astro";
+import type { PageType, SchemaData } from "@lib/seo";
+
+export interface Props {
+  title?: string;
+  /** Tripleta de keywords [kw1, kw2, kw3] (regla de metas). Ver KEYWORDS en site.ts. */
+  keywords?: readonly string[];
+  description?: string;
+  canonical?: string;
+  image?: string;
+  pageType?: PageType;
+  schemaData?: SchemaData;
+  noindex?: boolean;
+  /**
+   * Migas de pan (para el componente visual). { label, href }.
+   * Si se omite o queda vacío, no se renderiza la barra ni el BreadcrumbList.
+   */
+  breadcrumbs?: { label: string; href?: string }[];
+  /**
+   * Modo guía del chrome (TopBar/Header anotados + leyenda explicativa).
+   * Default `true` → el sitio-plantilla muestra las guías en todas partes.
+   * Las páginas de detalle de un módulo (p. ej. /modulos/topbar) pasan
+   * `guia={false}`: ahí el módulo ya se documenta a fondo, así que el chrome
+   * se muestra real (sin leyenda). El showcase de guías vive en el índice.
+   */
+  guia?: boolean;
+  /**
+   * Alias de conveniencia para activar TechArticle (opt-in).
+   * `schemaType="TechArticle"` → equivalente a pasar pageType="techArticle"
+   * y un schemaData.techArticle autoderivado (headline=title, fecha=hoy).
+   * Si la página ya pasa pageType o schemaData.techArticle, ESOS ganan; el
+   * alias solo rellena lo que falte. Patrón conservador para tipar las /modulos/*
+   * sin importar helpers en cada página. NO afecta el grafo base.
+   */
+  schemaType?: 'TechArticle';
+}
+
+const { breadcrumbs = [], guia = false, schemaType, ...baseProps } = Astro.props;
+
+// ── schemaType → auto-derive de techArticle (conservador, no toca pageType) ──
+// El nodo TechArticle convive con cualquier pageType (se emite igual que FAQ
+// como nodo adicional en buildSchema). Si la página ya pasó schemaData.techArticle
+// con datos curados, NO los pisamos: el alias solo rellena cuando falta.
+const wantsTechArticle = schemaType === "TechArticle";
+const todayISO = new Date().toISOString().slice(0, 10);
+const autoTechArticle = wantsTechArticle && !(baseProps.schemaData?.techArticle)
+  ? {
+      techArticle: {
+        headline: baseProps.title ?? "",
+        path: Astro.url.pathname,
+        datePublished: todayISO,
+        dateModified: todayISO,
+      },
+    }
+  : {};
+
+// Las migas alimentan el BreadcrumbList del schema (lo emite buildSchema UNA
+// sola vez, B3 — el componente Breadcrumbs NO debe emitir su propio JSON-LD).
+// El componente visual usa { label, href }; el schema usa { name, path }.
+const schemaData: SchemaData = {
+  ...(baseProps.schemaData ?? {}),
+  ...autoTechArticle,
+  ...(breadcrumbs.length > 0
+    ? {
+        breadcrumbs: [
+          { name: "Inicio", path: "/" },
+          ...breadcrumbs.map((b) => ({ name: b.label, path: b.href ?? "" })),
+        ],
+      }
+    : {}),
+};
+---
+
+<BaseLayout {...baseProps} schemaData={schemaData}>
+  {/* TopBar: barra utilitaria. `guia` = modo plantilla-guía (anota cada punto). */}
+  {/* En un sitio de cliente (o página de detalle), se pasa guia={false}. */}
+  <TopBar guia={guia} />
+  {/* Header: `guia` = leyenda explicativa bajo el header (igual que el topbar). */}
+  <Header guia={guia} />
+
+  {/* Barra de migas (entre header y contenido). Visual; el JSON-LD lo emite buildSchema.
+      En modo guía se muestra SIEMPRE (ruta de ejemplo anotada + leyenda), aunque la
+      página no pase `breadcrumbs`; en producción solo si hay ruta real. */}
+  {(guia || breadcrumbs.length > 0) && <Breadcrumbs items={breadcrumbs} guia={guia} />}
+
+  <main id="main-content">
+    <slot />
+  </main>
+
+  <Footer />
+</BaseLayout>

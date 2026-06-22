@@ -1,0 +1,96 @@
+---
+// ============================================================================
+// /nosotros/ — "Nosotros" del medio editorial Infórmate.mx.
+// Presenta qué es el portal, su enfoque y sus principios editoriales.
+// Identidad desde SITE (site.ts). Sin cifras ni afirmaciones fabricadas.
+// ============================================================================
+import PageLayout from '@layouts/PageLayout.astro'
+import Hero from '@components/Hero.astro'
+import SectionHeading from '@components/SectionHeading.astro'
+import SectionMenu from '@components/SectionMenu.astro'
+import { SITE } from '@config/site'
+
+// Principios editoriales — data-driven.
+const principios = [
+  { t: 'Información verificable', d: 'Publicamos con base en fuentes y datos comprobables; si algo no se puede sustentar, no se afirma.' },
+  { t: 'Claridad ante todo', d: 'Explicamos temas de economía y negocios en lenguaje sencillo, sin tecnicismos innecesarios ni relleno.' },
+  { t: 'Enfoque en México', d: 'Cubrimos la actualidad del país: empresas, emprendimiento, tecnología y economía que afectan a personas y negocios.' },
+  { t: 'Independencia', d: 'Mantenemos criterio propio en lo que publicamos y separamos con claridad la información de la opinión.' },
+]
+
+const cierreItems = [
+  { label: 'Empresas', href: '/blog/categoria/empresas', sub: 'Negocios de México' },
+  { label: 'Emprendimiento', href: '/blog/categoria/emprendimiento', sub: 'Ecosistema startup' },
+  { label: 'Artículos', href: '/blog', sub: 'Toda la cobertura' },
+  { label: 'Contacto', href: '/contacto', sub: 'Escríbenos' },
+]
+const cierreCta = { label: 'Ver últimas noticias', href: '/blog', sub: 'Lo más reciente' }
+---
+
+<PageLayout
+  title="Nosotros — qué es Infórmate.mx"
+  description="Infórmate.mx es un portal de noticias de México enfocado en empresas, emprendimiento, tecnología y economía, con información clara y verificable."
+  pageType="page"
+  breadcrumbs={[{ label: 'Nosotros' }]}
+  guia={false}
+>
+  <Hero
+    badge="Quiénes somos"
+    title="Un portal de"
+    accent="noticias de México"
+    subtitle="Cubrimos la actualidad económica, empresarial y de innovación del país, con información clara y verificable para mantenerte al día."
+    descRight={[
+      `${SITE.name} nació para seguir de cerca lo que mueve a México: las empresas, el emprendimiento, la tecnología y la economía. Reunimos esa cobertura en un solo lugar, fácil de leer.`,
+      'Creemos en la información comprobable y el lenguaje claro: te contamos lo esencial, sin ruido, para que entiendas lo que pasa y por qué importa.',
+    ]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <SectionHeading
+        layout="duo"
+        eyebrow="Qué cubrimos"
+        title="Actualidad de México, en cuatro secciones"
+        desc="Empresas, emprendimiento, tecnología y economía: los temas que mueven al país."
+        body={[
+          'Organizamos la cobertura en secciones para que encuentres rápido lo que te interesa: perfiles y análisis de empresas, historias del ecosistema emprendedor, novedades tecnológicas e información económica.',
+          'Cada nota busca aportar contexto, no solo el dato suelto: para qué importa, a quién afecta y qué sigue.',
+        ]}
+      />
+    </div>
+  </section>
+
+  <section class="section section--surface">
+    <div class="container">
+      <SectionHeading
+        eyebrow="En qué creemos"
+        title="Los principios que guían lo que"
+        titleAccent="publicamos"
+        desc="Cuatro convicciones que definen nuestra forma de informar."
+      />
+      <div class="principios">
+        {principios.map((p) => (
+          <article class="principio">
+            <h3 class="principio__t">{p.t}</h3>
+            <p class="principio__d">{p.d}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <SectionMenu items={cierreItems} cta={cierreCta} ariaLabel="Sigue explorando el sitio" />
+</PageLayout>
+
+<style>
+  .container { max-width: var(--container-max); margin-inline: auto; padding-inline: var(--container-px); }
+  .section { padding: var(--sp-8) 0; }
+  .section--surface { background: var(--c-surface); }
+  @media (min-width: 768px) { .section { padding: var(--sp-10) 0; } }
+
+  .principios { display: grid; grid-template-columns: 1fr; gap: var(--sp-4); margin-top: var(--sp-6); }
+  @media (min-width: 640px)  { .principios { grid-template-columns: repeat(2, 1fr); } }
+  .principio { padding: var(--sp-5); background: var(--c-white); border: 1px solid var(--c-border); border-radius: var(--radius-lg); }
+  .principio__t { font-family: var(--font-heading); font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--c-ink); margin: 0 0 var(--sp-2); }
+  .principio__d { font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--c-ink-2); margin: 0; }
+</style>
