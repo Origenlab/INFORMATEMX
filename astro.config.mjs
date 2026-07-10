@@ -2,8 +2,70 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
+import { existsSync, statSync } from 'node:fs';
+import { join, dirname } from 'node:path';
 import sitemap from '@astrojs/sitemap';
 import mdx from '@astrojs/mdx';
+
+// ─── Sitemap lastmod dinámico (patrón EVENTECH · SEO Maestro 2026-07-10) ────
+// Resuelve URL → archivo fuente → fecha REAL (git log → mtime → omitir).
+// Mejor omitir lastmod que mentir con new Date() del build (Google descarta la
+// señal si todas las fechas cambian en cada deploy). Requiere fetch-depth: 0 en
+// el checkout del workflow: sin historial completo, git log devuelve la fecha
+// del HEAD para todo (verificado en piloto EVENTECH).
+const ROOT = dirname(fileURLToPath(import.meta.url));
+const _dateCache = new Map();
+
+/** @param {string} relPath */
+function sourceDate(relPath) {
+  if (_dateCache.has(relPath)) return _dateCache.get(relPath);
+  let date = null;
+  const abs = join(ROOT, relPath);
+  if (existsSync(abs)) {
+    try {
+      const out = execSync(`git log -1 --format=%cI -- "${relPath}"`, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+      if (out) date = new Date(out);
+    } catch {}
+    if (!date) {
+      try {
+        date = statSync(abs).mtime;
+      } catch {}
+    }
+  }
+  _dateCache.set(relPath, date);
+  return date;
+}
+
+/** @param {string} url */
+function lastmodForUrl(url) {
+  const path = new URL(url).pathname.replace(/\/+$/, '');
+  const rel = path === '' ? 'index' : path.replace(/^\//, '');
+  const last = rel.split('/').pop();
+  const candidates = [
+    `src/pages/${rel}/index.astro`,
+    `src/pages/${rel}.astro`,
+    `src/pages/${rel}/index.md`,
+  ];
+  // Colección `articulos` (blog editorial): /blog/<id> → src/content/articulos/<id>.mdx
+  if (rel.startsWith('blog/')) {
+    const sub = rel.slice('blog/'.length);
+    for (const ext of ['mdx', 'md']) {
+      candidates.push(`src/content/articulos/${sub}.${ext}`);
+      candidates.push(`src/content/articulos/${sub}/index.${ext}`);
+      candidates.push(`src/content/articulos/${last}.${ext}`);
+    }
+  }
+  for (const c of candidates) {
+    const d = sourceDate(c);
+    if (d) return d;
+  }
+  return null; // rutas dinámicas (categoría/tag/paginación) → sin lastmod (honesto)
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PATH ALIASES (resolve.alias) — DEBEN coincidir con compilerOptions.paths de
@@ -66,8 +128,16 @@ const sitemapOptions = {
       item.changefreq = /** @type {any} */ ('monthly');
     }
 
-    // lastmod omitido a propósito: poner new Date() en cada build hace que
-    // Google ignore el campo en todo el sitio (señal no confiable). — PROYECTORED
+    // lastmod REAL por archivo fuente (git log -1). Antes se omitía a propósito
+    // (new Date() en cada build = señal no confiable — PROYECTORED); el resolver
+    // da la fecha real del último commit que tocó la página, y si la URL no se
+    // resuelve a un archivo (categoría/tag dinámicos) se sigue omitiendo.
+    const lm = lastmodForUrl(url);
+    if (lm) {
+      item.lastmod = lm.toISOString();
+    } else {
+      delete item.lastmod;
+    }
     return item;
   },
 };

@@ -53,7 +53,12 @@ export const SITE = {
   organization: {
     name: 'Infórmate.mx',
     legalName: 'Infórmate.mx',
-    logo: '/images/brand/logo.svg',
+    // Wordmark PNG real generado 2026-07-10 (el logo.svg referenciado nunca
+    // existió como archivo → el ImageObject del schema daba 404). Placeholder
+    // técnico honesto: wordmark en paleta del sitio; sustituir por arte final.
+    logo: '/images/brand/logo.png',
+    logoWidth: 800, // px reales del PNG (los consume el ImageObject del schema).
+    logoHeight: 208,
     foundingDate: '2025', // Año declarado por el sitio (© 2025 en el legacy).
     sameAs: ['https://x.com/informate_mx'] as string[], // perfil real del legacy.
   },

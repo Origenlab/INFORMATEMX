@@ -37,6 +37,8 @@
  * ========================================================================== */
 
 import { SITE, CONTACT, SOCIAL } from '@config/site';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 /* ──────────────────────────────────────────────────────────────────────────
  * @id de las entidades raíz del grafo. Todo nodo apunta a estos por @id, de
@@ -99,6 +101,25 @@ export function absUrl(path: string): string {
 function absImage(src?: string): string | undefined {
   if (!src) return undefined;
   return /^https?:\/\//.test(src) ? src : `${SITE.url}${src.startsWith('/') ? src : `/${src}`}`;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * ogImagePath() — guardia build-time contra og:image rotos (SEO Maestro 2026-07-10).
+ * Los artículos declaran heroImage bajo /images/articulos/ que puede no existir
+ * aún como archivo (fotos pendientes; content.config NO exige el archivo). Servir
+ * un og:image 404 rompe la preview en redes/AI crawlers. En SSG este código corre
+ * en build, así que podemos verificar el filesystem: si la ruta es local y el
+ * archivo NO está en public/, caemos al og default del sitio (imagen REAL).
+ * URLs http(s) externas se respetan tal cual (no verificables en build).
+ * ────────────────────────────────────────────────────────────────────────── */
+export function ogImagePath(src?: string): string | undefined {
+  const fallback = SITE.seo?.image;
+  const cand = src ?? fallback;
+  if (!cand) return undefined;
+  if (/^https?:\/\//.test(cand)) return cand;
+  const rel = cand.startsWith('/') ? cand : `/${cand}`;
+  if (existsSync(join(process.cwd(), 'public', rel))) return rel;
+  return fallback;
 }
 
 // Longitud máxima del <title> (Google trunca ~580px ≈ 60 caracteres).
@@ -378,7 +399,7 @@ export function buildMeta(input: MetaInput): MetaOutput {
     title: formatTitle(input.title),
     description: truncateMetaDescription(input.description ?? SITE.seo?.description ?? ''),
     canonical: absUrl(input.canonical ?? '/'),
-    image: absImage(input.image) ?? absImage(SITE.seo?.image) ?? `${SITE.url}/og.jpg`,
+    image: absImage(ogImagePath(input.image)) ?? absImage(SITE.seo?.image) ?? `${SITE.url}/og.jpg`,
     type: input.type ?? 'website',
     robots: input.noindex
       ? 'noindex,nofollow'
@@ -417,13 +438,28 @@ export function orgSchema() {
     name: SITE.organization?.name ?? SITE.name,
     ...(SITE.organization?.legalName ? { legalName: SITE.organization.legalName } : {}),
     url: SITE.url,
-    logo: { '@type': 'ImageObject', '@id': LOGO_ID, url: absImage(SITE.organization?.logo) ?? `${SITE.url}/logo.png` },
+    logo: {
+      '@type': 'ImageObject',
+      '@id': LOGO_ID,
+      url: absImage(SITE.organization?.logo) ?? `${SITE.url}/logo.png`,
+      // width/height REALES del archivo (px). Se leen de site.ts si el sitio los
+      // declara (patrón EVENTECH: dimensiones medidas con PIL, no inventadas).
+      ...((SITE.organization as { logoWidth?: number; logoHeight?: number })?.logoWidth &&
+      (SITE.organization as { logoWidth?: number; logoHeight?: number })?.logoHeight
+        ? {
+            width: (SITE.organization as unknown as { logoWidth: number }).logoWidth,
+            height: (SITE.organization as unknown as { logoHeight: number }).logoHeight,
+          }
+        : {}),
+    },
     image: { '@id': LOGO_ID },
     description: SITE.seo?.description ?? SITE.description ?? '',
     ...(SITE.organization?.foundingDate ? { foundingDate: SITE.organization.foundingDate } : {}),
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: CONTACT.phoneRaw ?? CONTACT.phone,
+      // telephone SOLO si hay número real: emitir "" es ruido de schema (un medio
+      // editorial sin teléfono público no declara el campo — no se inventa NAP).
+      ...(CONTACT.phoneRaw || CONTACT.phone ? { telephone: CONTACT.phoneRaw || CONTACT.phone } : {}),
       email: CONTACT.email,
       contactType: 'customer service',
       areaServed: 'MX',
@@ -759,7 +795,9 @@ export function articleSchema(a: ArticleData) {
     headline: a.title,
     description: a.description,
     url,
-    ...(a.image ? { image: absImage(a.image) } : {}),
+    // ogImagePath: si el heroImage aún no existe como archivo → og default real
+    // (evita image 404 en el nodo Article; misma guardia que buildMeta).
+    ...(a.image ? { image: absImage(ogImagePath(a.image)) } : {}),
     datePublished: a.datePublished,
     dateModified: a.dateModified ?? a.datePublished,
     inLanguage: SITE.locale ?? 'es-MX',

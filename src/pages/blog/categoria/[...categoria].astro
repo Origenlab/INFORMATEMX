@@ -14,12 +14,20 @@ import SectionMenu from '@components/SectionMenu.astro'
 import { getCollection } from 'astro:content'
 import { blogImage } from '@lib/blogImages'
 import { CAT_LABEL } from '@lib/blog'
+import { TAXONOMY } from '@config/site'
 
 export async function getStaticPaths() {
   const posts = (await getCollection('articulos', ({ data }) => !data.draft)).sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
   )
-  const cats = [...new Set(posts.map((p) => p.data.category))]
+  // UNIÓN de secciones oficiales (TAXONOMY — las que enlazan Header/Home/Footer)
+  // + categorías usadas por artículos. Antes solo se construían las usadas: con
+  // 1 artículo publicado, 3 de las 4 secciones del NAV daban 404 en TODO el
+  // sitio (enlaces internos rotos sitewide — fix técnico SEO 2026-07-10). La
+  // página ya maneja el estado vacío («0 artículos en esta categoría»).
+  const cats = [
+    ...new Set([...TAXONOMY.categories.map((c) => c.slug), ...posts.map((p) => p.data.category)]),
+  ]
   return cats.map((categoria) => ({
     params: { categoria },
     props: { categoria, posts: posts.filter((p) => p.data.category === categoria) },

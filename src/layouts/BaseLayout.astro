@@ -101,6 +101,20 @@ const meta = buildMeta({
 
 // JSON-LD por tipo de página (firma posicional: pageType, schemaData).
 const jsonLd = buildSchema(pageType, schemaData);
+
+// og:image:type HONESTO: derivado de la extensión real de la imagen final
+// (nunca hardcodear un MIME que mienta sobre el archivo — lección Ola 1).
+const OG_MIME: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+  avif: "image/avif",
+  gif: "image/gif",
+  svg: "image/svg+xml",
+};
+const ogImageExt = (meta.image.split(".").pop() ?? "").toLowerCase();
+const ogImageType = OG_MIME[ogImageExt];
 ---
 
 <!doctype html>
@@ -122,6 +136,7 @@ const jsonLd = buildSchema(pageType, schemaData);
     <meta property="og:description" content={meta.description} />
     <meta property="og:url" content={meta.canonical} />
     <meta property="og:image" content={meta.image} />
+    {ogImageType && <meta property="og:image:type" content={ogImageType} />}
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={meta.title} />
