@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: "cf-pages-informate-mx"
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,12 +30,36 @@ jobs:
 
       - run: npm ci
 
+      - name: Astro check (gate real, sin '|| true')
+        run: npx astro check
+
       - run: npm run build
+
+      # Huella del commit DENTRO del artefacto. El gate final se la pide al
+      # dominio: si no la devuelve, el deploy no llegó a producción.
+      - name: Sellar build-id
+        run: echo "${{ github.sha }}" > dist/build-id.txt
 
       - name: Ensure CF Pages project exists
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: CLOUDFLARE_ACCOUNT_ID=711c2e12a6bd9cec3ec5c6a7633f147c npx -y wrangler@3 pages project create informate-mx --production-branch=main 2>/dev/null || true
+
+      # informate.mx respondía 404: la zona apuntaba a CF pero el proyecto Pages
+      # NO tenía el custom domain adjunto (auditoría 2026-07-16). Idempotente:
+      # si ya existe, el POST devuelve error y se ignora.
+      - name: Ensure custom domain attached (apex, NUNCA www — runbook §4)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          curl -s -X POST \
+            "https://api.cloudflare.com/client/v4/accounts/711c2e12a6bd9cec3ec5c6a7633f147c/pages/projects/informate-mx/domains" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"name":"informate.mx"}' | head -c 400
+          echo
+          curl -s "https://api.cloudflare.com/client/v4/accounts/711c2e12a6bd9cec3ec5c6a7633f147c/pages/projects/informate-mx/domains" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | head -c 600
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -39,3 +67,19 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 711c2e12a6bd9cec3ec5c6a7633f147c
           command: pages deploy dist --project-name=informate-mx --branch=main
+
+      # ─── GATE REAL: verifica el DOMINIO, no el build ───
+      - name: Verificar que el dominio sirve este commit
+        run: |
+          DOMINIO="informate.mx"
+          for i in $(seq 1 18); do
+            sleep 10
+            LIVE=$(curl -fsSL --max-time 15 "https://$DOMINIO/build-id.txt?cb=${RANDOM}${i}" 2>/dev/null | tr -d '[:space:]' || echo "")
+            if [ "$LIVE" = "${{ github.sha }}" ]; then
+              echo "OK — $DOMINIO sirve ${GITHUB_SHA:0:12}"
+              exit 0
+            fi
+            echo "intento $i/18 — el dominio devuelve '${LIVE:0:12}', esperado '${GITHUB_SHA:0:12}'"
+          done
+          echo "::error::$DOMINIO NO sirve este build. Revisar: DNS de la zona (¿CNAME a informate-mx.pages.dev?), custom domain status, caché."
+          exit 1
