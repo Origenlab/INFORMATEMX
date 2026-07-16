@@ -45,3 +45,5 @@ Thumbs.db
 
 # QA scratch (screenshots locales, no deploy)
 .qa/
+*.log
+.wrangler
