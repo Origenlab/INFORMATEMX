@@ -1,0 +1,37 @@
+# INFORMATE.MX — Portal de noticias, empresas y emprendimiento en México
+
+> Infórmate.mx es un medio digital editorial que cubre actualidad económica, empresas y
+> emprendimiento en México, con información clara y verificable organizada en cuatro
+> secciones: Empresas, Emprendimiento, Tecnología y Economía.
+
+Idioma: español (es-MX). País: México.
+
+## Acerca de
+Es un portal editorial, no un negocio local: no vende productos ni servicios. Su contenido
+vive en el blog y se organiza por secciones temáticas. La redacción opera desde Ciudad de
+México y publica perfiles de empresas, guías para emprendedores, notas de tecnología y
+análisis de la coyuntura económica del país.
+
+## Servicios / Productos
+- Sección Empresas: perfiles y análisis de las empresas que mueven la economía de México.
+- Sección Emprendimiento: historias, guías y recursos para quienes construyen un negocio (financiamiento, ecosistema startup).
+- Sección Tecnología: innovación, digitalización y su impacto en empresas e industrias.
+- Sección Economía: indicadores, inversión y coyuntura económica explicada con claridad.
+
+## Páginas clave
+- [Inicio](https://informate.mx/): portada con la vitrina de secciones y notas recientes.
+- [Artículos](https://informate.mx/blog): archivo completo de notas del medio.
+- [Empresas](https://informate.mx/blog/categoria/empresas): sección de empresas y negocios.
+- [Emprendimiento](https://informate.mx/blog/categoria/emprendimiento): sección de emprendimiento y startups.
+- [Tecnología](https://informate.mx/blog/categoria/tecnologia): sección de tecnología e innovación.
+- [Economía](https://informate.mx/blog/categoria/economia): sección de economía y actualidad.
+- [Nosotros](https://informate.mx/nosotros): qué es Infórmate.mx y su línea editorial.
+- [Contacto](https://informate.mx/contacto): canal de contacto con la redacción.
+- [Aviso de privacidad](https://informate.mx/privacidad): política de privacidad.
+- [Términos y condiciones](https://informate.mx/terminos): términos de uso del sitio.
+
+## Contacto
+- Sitio: https://informate.mx
+- Correo: contacto@informate.mx
+- X (Twitter): https://x.com/informate_mx (@informate_mx)
+- Ciudad: Ciudad de México
